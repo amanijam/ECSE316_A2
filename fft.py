@@ -1,8 +1,11 @@
 import sys
+import numpy as np
+
+smallSize = 16
 
 # Default values
 mode = 1
-image = 'moonlanding.png'
+iFile = 'moonlanding.png'
 
 # MODE
 # [1] (Default) for fast mode where the image is converted into its FFT form and displayed
@@ -25,14 +28,14 @@ elif len(sys.argv) == 3:
     if(sys.argv[1] == '-m'):
         mode = sys.argv[2]
     elif(sys.argv[1] == '-i'):
-        image = sys.argv[2]
+        iFile = sys.argv[2]
     else:
         syntaxError = 1
 elif len(sys.argv) == 5:
     print("4 args (mode and image)")
     if(sys.argv[1] == '-m' and sys.argv[3] == '-i'):
         mode = sys.argv[2]
-        image = sys.argv[4]
+        iFile = sys.argv[4]
     else:
         syntaxError = 1
 else:
@@ -41,3 +44,23 @@ else:
 if(syntaxError):
     print("ERROR\tIncorrect Syntax - Expected Syntax: {}".format(expSyntax))
     exit(1)
+
+def naiveDFT(arr):
+    return 0
+
+def fft(arr):
+    n = len(arr)
+    arr = np.asarray(arr, dtype=complex)
+    if(n < smallSize): return naiveDFT(arr)
+    else: 
+        arr_even = fft(arr[::2])
+        arr_odd = fft(arr[1::2])
+        exp = np.exp(-2j * np.pi * np.arange(n) / n)
+        arr_even = np.concatenate((arr_even, arr_even))
+        arr_odd = np.concatenate((arr_odd, arr_odd))
+        return arr_even + exp * arr_odd
+
+
+a = np.array([0, 1, 2, 3, 4, 5, 6])
+print(len(a))
+print(a.shape[0])
