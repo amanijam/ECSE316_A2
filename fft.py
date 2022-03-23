@@ -47,7 +47,7 @@ def naiveDFT(arr):
     arr = np.asarray(arr, dtype=complex)
     transform = arr.copy()
     for i in range(len(arr)):
-        transform[i] = np.sum(arr*np.exp((-2j*np.pi)/len(arr)*i*np.arange(len(arr))))
+        transform[i] = (np.sum(arr*np.exp((-2j*np.pi)/len(arr)*i*np.arange(len(arr)))))/len(arr)
 
     return np.asarray(transform)
 
@@ -68,6 +68,20 @@ def naive2d(arr):
     arr = arr.transpose()
     for col_index, col in enumerate(arr):
         arr[col_index] = naiveDFT(col)
+
+    arr = arr.transpose()
+
+    return arr
+
+def inverseNaive2d(arr):
+    arr = np.asarray(arr, dtype=complex)
+
+    for row_index, row in enumerate(arr):
+        arr[row_index] = inverseNaive(row)
+    
+    arr = arr.transpose()
+    for col_index, col in enumerate(arr):
+        arr[col_index] = inverseNaive(col)
 
     arr = arr.transpose()
 
