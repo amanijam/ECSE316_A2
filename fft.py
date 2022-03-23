@@ -1,4 +1,5 @@
 import sys
+import numpy as np
 
 # Default values
 mode = 1
@@ -41,3 +42,20 @@ else:
 if(syntaxError):
     print("ERROR\tIncorrect Syntax - Expected Syntax: {}".format(expSyntax))
     exit(1)
+
+def naiveDFT(arr):
+    arr = np.asarray(arr)
+    transform = [0] * len(arr)
+    n_values = [0] * len(arr)
+    for i in range(len(arr)):
+        n_values[i] = i
+
+    n_values = np.asarray(n_values)
+    for i in range(len(arr)):
+        transform[i] = np.sum(arr*np.exp((-2j*np.pi)/len(arr)*i*n_values))
+
+    print(transform)
+    return np.asarray(transform)
+
+if __name__ == "__main__":
+    print(naiveDFT([2,3,4,5]))
