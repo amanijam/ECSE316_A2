@@ -48,17 +48,34 @@ if(syntaxError):
 def naiveDFT(arr):
     return 0
 
-def fft(arr):
+def naiveInverseDFT(arr):
+    return 0
+
+def FFT(arr):
     n = len(arr)
     arr = np.asarray(arr, dtype=complex)
     if(n < smallSize): return naiveDFT(arr)
     else: 
-        arr_even = fft(arr[::2])
-        arr_odd = fft(arr[1::2])
-        exp = np.exp(-2j * np.pi * np.arange(n) / n)
+        arr_even = FFT(arr[::2])
+        arr_odd = FFT(arr[1::2])
+        k = np.arange(n)
+        exp = np.exp((-2j * np.pi * k) / n)
         arr_even = np.concatenate((arr_even, arr_even))
         arr_odd = np.concatenate((arr_odd, arr_odd))
         return arr_even + exp * arr_odd
+
+def inverseFFT(arr):
+    n = len(arr)
+    arr = np.asarray(arr, dtype=complex)
+    if(n < smallSize): return naiveInverseDFT(arr) * n
+    else: 
+        arr_even = inverseFFT(arr[::2])
+        arr_odd = inverseFFT(arr[1::2])
+        k = np.arange(n)
+        exp = np.exp((2j * np.pi * k) / n)
+        arr_even = np.concatenate((arr_even, arr_even))
+        arr_odd = np.concatenate((arr_odd, arr_odd))
+        return (arr_even + exp * arr_odd) / n
 
 
 a = np.array([0, 1, 2, 3, 4, 5, 6])
