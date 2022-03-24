@@ -50,9 +50,9 @@ def naiveDFT(arr):
     arr = np.asarray(arr, dtype=complex)
     transform = arr.copy()
     for i in range(len(arr)):
-        transform[i] = (
-            np.sum(arr * np.exp((-2j * np.pi) / len(arr) * i * np.arange(len(arr))))
-        ) / len(arr)
+        transform[i] = np.sum(
+            arr * np.exp((-2j * np.pi) / len(arr) * i * np.arange(len(arr)))
+        )
 
     return np.asarray(transform)
 
