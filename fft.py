@@ -1,5 +1,7 @@
 import sys
 import numpy as np
+import matplotlib.pyplot as plt
+import cv2
 
 # Default values
 mode = 1
@@ -43,11 +45,14 @@ if(syntaxError):
     print("ERROR\tIncorrect Syntax - Expected Syntax: {}".format(expSyntax))
     exit(1)
 
+if mode == 2:
+    denoiseMode(image)
+
 def naiveDFT(arr):
     arr = np.asarray(arr, dtype=complex)
     transform = arr.copy()
     for i in range(len(arr)):
-        transform[i] = (np.sum(arr*np.exp((-2j*np.pi)/len(arr)*i*np.arange(len(arr)))))/len(arr)
+        transform[i] = np.sum(arr*np.exp((-2j*np.pi)/len(arr)*i*np.arange(len(arr))))
 
     return np.asarray(transform)
 
@@ -55,7 +60,7 @@ def inverseNaive(arr):
     arr = np.asarray(arr, dtype=complex)
     transform = arr.copy()
     for i in range(len(arr)):
-        transform[i] = np.sum(arr*np.exp((2j*np.pi)/len(arr)*i*np.arange(len(arr))))
+        transform[i] = np.sum(arr*np.exp((2j*np.pi)/len(arr)*i*np.arange(len(arr))))/len(arr)
 
     return np.asarray(transform)
 
@@ -87,9 +92,32 @@ def inverseNaive2d(arr):
 
     return arr
 
+def denoiseMode(img):
+    img = plt.imread(image)
+    # transformed_img = FFT2D(img)
+    transformed_img = naive2d(img)
+    plt.imshow(transformed_img)
+
+
+
 if __name__ == "__main__":
 
     x = [[2,3,4], [4,3,5], [7,5,6]]
 
     print(naive2d(x))
     print(np.fft.fft2(x))
+    print("hello")
+    img = plt.imread(image).astype(float)
+    # img = cv2.imread(image)
+    print("hello")
+    print(img)
+    plt.imshow(img)
+    plt.show()
+    ours = naive2d(img)
+    print("hello")
+    print(ours)
+    plt.imshow(ours)
+    test_result = np.fft.fft2(img)
+    print(test_result)
+    print(naive2d(img))
+    # print(np.fft.fft2(img))
