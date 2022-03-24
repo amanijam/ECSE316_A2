@@ -127,13 +127,36 @@ def inverseFFT(arr):
         arr_odd = np.concatenate((arr_odd, arr_odd))
         return (arr_even + exp * arr_odd) / n
 
+def FFT2d(arr):
+    arr = np.asarray(arr, dtype=complex)
+
+    for row_index, row in enumerate(arr):
+        arr[row_index] = FFT(row)
+
+    arr = arr.transpose()
+    for col_index, col in enumerate(arr):
+        arr[col_index] = FFT(col)
+    arr = arr.transpose()
+
+    return arr
+
+def inverseFFT2d(arr):
+    arr = np.asarray(arr, dtype=complex)
+
+    for row_index, row in enumerate(arr):
+        arr[row_index] = inverseFFT(row)
+
+    arr = arr.transpose()
+    for col_index, col in enumerate(arr):
+        arr[col_index] = inverseFFT(col)
+    arr = arr.transpose()
+
+    return arr
 
 if __name__ == "__main__":
 
     x = [[2, 3, 4], [4, 3, 5], [7, 5, 6]]
 
     print(naive2d_DFT(x))
+    print(FFT2d(x))
     print(np.fft.fft2(x))
-    a = np.array([0, 1, 2, 3, 4, 5, 6])
-    print(len(a))
-    print(a.shape[0])
