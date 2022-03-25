@@ -45,9 +45,6 @@ if(syntaxError):
     print("ERROR\tIncorrect Syntax - Expected Syntax: {}".format(expSyntax))
     exit(1)
 
-if mode == 2:
-    denoiseMode(image)
-
 def naiveDFT(arr):
     arr = np.asarray(arr, dtype=complex)
     transform = arr.copy()
@@ -93,31 +90,43 @@ def inverseNaive2d(arr):
     return arr
 
 def denoiseMode(img):
-    img = plt.imread(image)
-    # transformed_img = FFT2D(img)
-    transformed_img = naive2d(img)
-    plt.imshow(transformed_img)
+    img = plt.imread(img)
 
+    denoised_img = naive2d(img)
+    for i, row in enumerate(denoised_img):
+        for j, col in enumerate(row):
+            if col.real > (160*np.pi):
+                denoised_img[i][j] = 0
+    denoised_img = inverseNaive2d(denoised_img)
 
+    plt.subplot(1, 2, 1)
+    plt.title("Original Image")
+    plt.imshow(img.real)
 
-if __name__ == "__main__":
-
-    x = [[2,3,4], [4,3,5], [7,5,6]]
-
-    print(naive2d(x))
-    print(np.fft.fft2(x))
-    print("hello")
-    img = plt.imread(image).astype(float)
-    # img = cv2.imread(image)
-    print("hello")
-    print(img)
-    plt.imshow(img)
+    plt.subplot(1, 2, 2)
+    plt.title("Denoised Image")
+    plt.imshow(denoised_img.real)
     plt.show()
-    ours = naive2d(img)
-    print("hello")
-    print(ours)
-    plt.imshow(ours)
-    test_result = np.fft.fft2(img)
-    print(test_result)
-    print(naive2d(img))
-    # print(np.fft.fft2(img))
+
+if mode == '2':
+    denoiseMode(image)
+
+
+# if __name__ == "__main__":
+
+#     x = [[2,3,4], [4,3,5], [7,5,6]]
+
+#     print(naive2d(x))
+#     print(np.fft.fft2(x))
+#     print("hello")
+#     img = plt.imread(image).astype(float)
+#     # img = cv2.imread(image)
+#     print("hello")
+#     ours = naive2d(img)
+#     print("hello")
+#     plt.imshow(ours)
+#     plt.show()
+#     test_result = np.fft.fft2(img)
+#     print(test_result)
+#     print(naive2d(img))
+#     # print(np.fft.fft2(img))
