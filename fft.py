@@ -1,5 +1,9 @@
 import sys
 import numpy as np
+import cv2
+import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
+
 
 smallSize = 16
 
@@ -127,6 +131,7 @@ def inverseFFT(arr):
         arr_odd = np.concatenate((arr_odd, arr_odd))
         return (arr_even + exp * arr_odd) / n
 
+
 def FFT2d(arr):
     arr = np.asarray(arr, dtype=complex)
 
@@ -139,6 +144,7 @@ def FFT2d(arr):
     arr = arr.transpose()
 
     return arr
+
 
 def inverseFFT2d(arr):
     arr = np.asarray(arr, dtype=complex)
@@ -153,10 +159,45 @@ def inverseFFT2d(arr):
 
     return arr
 
+
+def fastMode(img):
+    transfImg = FFT2d(img)
+
+    plt.figure(figsize=(10, 5))  # 10x5 figure
+
+    # first subplot of the original image (grayscale)
+    plt.subplot(1, 2, 1)
+    plt.title("Original Image")
+    plt.imshow(img, cmap="gray")
+
+    # second subplot of the fourier transform of the image, log scaled
+    plt.subplot(1, 2, 2)
+    plt.title("Fourier Transform")
+    plt.imshow(np.abs(transfImg), norm=LogNorm(vmin=5))
+    plt.colorbar()
+
+    plt.show()
+
+
 if __name__ == "__main__":
 
-    x = [[2, 3, 4], [4, 3, 5], [7, 5, 6]]
+    # x = [[2, 3, 4], [4, 3, 5], [7, 5, 6]]
 
-    print(naive2d_DFT(x))
-    print(FFT2d(x))
-    print(np.fft.fft2(x))
+    # print(naive2d_DFT(x))
+    # print(FFT2d(x))
+    # print(np.fft.fft2(x))
+
+    img = cv2.imread(iFile, cv2.IMREAD_GRAYSCALE)
+    width = len(img[0])
+    height = len(img)
+
+    if int(np.log2(width)) != np.log2(width):
+        width = pow(2, int(np.log2(width)) + 1)
+
+    if int(np.log2(height)) != np.log2(height):
+        height = pow(2, int(np.log2(height)) + 1)
+
+    img = cv2.resize(img, (width, height))
+
+    if mode == 1:
+        fastMode(img)
