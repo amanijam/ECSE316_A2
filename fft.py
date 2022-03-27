@@ -5,7 +5,7 @@ import cv2
 
 # Default values
 mode = 1
-image = 'moonlanding.png'
+iFile = "moonlanding.png"
 
 # MODE
 # [1] (Default) for fast mode where the image is converted into its FFT form and displayed
@@ -90,43 +90,47 @@ def inverseNaive2d(arr):
     return arr
 
 def denoiseMode(img):
-    img = plt.imread(img)
+
+    num_rows = len(img)
+    num_cols = len(img[0])
+
+    fraction = 0.075
 
     denoised_img = naive2d(img)
-    for i, row in enumerate(denoised_img):
-        for j, col in enumerate(row):
-            if col.real > (160*np.pi):
-                denoised_img[i][j] = 0
+    denoised_img[round(fraction*num_rows):round((1-fraction)*num_rows)] = 0
+    denoised_img[:, round(fraction*num_cols):round((1-fraction)*num_cols)] = 0
     denoised_img = inverseNaive2d(denoised_img)
 
     plt.subplot(1, 2, 1)
     plt.title("Original Image")
-    plt.imshow(img.real)
+    plt.imshow(img.real, cmap="gray")
 
     plt.subplot(1, 2, 2)
     plt.title("Denoised Image")
-    plt.imshow(denoised_img.real)
+    plt.imshow(denoised_img.real, cmap="gray")
     plt.show()
 
-if mode == '2':
-    denoiseMode(image)
+def plottingMode():
+    return 0
 
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
 
 #     x = [[2,3,4], [4,3,5], [7,5,6]]
 
-#     print(naive2d(x))
-#     print(np.fft.fft2(x))
-#     print("hello")
-#     img = plt.imread(image).astype(float)
-#     # img = cv2.imread(image)
-#     print("hello")
-#     ours = naive2d(img)
-#     print("hello")
-#     plt.imshow(ours)
-#     plt.show()
-#     test_result = np.fft.fft2(img)
-#     print(test_result)
-#     print(naive2d(img))
-#     # print(np.fft.fft2(img))
+    img = cv2.imread(iFile, cv2.IMREAD_GRAYSCALE)
+    width = len(img[0])
+    height = len(img)
+
+    if int(np.log2(width)) != np.log2(width):
+        width = pow(2, int(np.log2(width)) + 1)
+
+    if int(np.log2(height)) != np.log2(height):
+        height = pow(2, int(np.log2(height)) + 1)
+
+    img = cv2.resize(img, (width, height))
+
+    if mode == '2':
+        denoiseMode(img)
+    elif mode == '4':
+        plottingMode()
