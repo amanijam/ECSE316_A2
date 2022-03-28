@@ -3,6 +3,8 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
+import time
+import math
 
 # MODE
 # [1] (Default) for fast mode where the image is converted into its FFT form and displayed
@@ -142,6 +144,26 @@ def fastMode(img):
 
     plt.show()
 
+def denoiseMode(img):
+
+    num_rows = len(img)
+    num_cols = len(img[0])
+
+    fraction = 0.075
+
+    denoised_img = naive2d_DFT(img)
+    denoised_img[round(fraction*num_rows):round((1-fraction)*num_rows)] = 0
+    denoised_img[:, round(fraction*num_cols):round((1-fraction)*num_cols)] = 0
+    denoised_img = inverseNaive2d_DFT(denoised_img)
+
+    plt.subplot(1, 2, 1)
+    plt.title("Original Image")
+    plt.imshow(img.real, cmap="gray")
+
+    plt.subplot(1, 2, 2)
+    plt.title("Denoised Image")
+    plt.imshow(denoised_img.real, cmap="gray")
+    plt.show()
 
 def compressionMode(img):
     # 0% compression
@@ -187,6 +209,50 @@ def compressionMode(img):
     print("Original \t- {} ".format(nonZeros[0]))
     for i in range(1, 6):
         print("{}% Compression - {}".format(c[i], nonZeros[i]))
+    plt.show()
+
+def plottingMode():
+
+    size_list = []
+    naive_list = []
+    fft_list = []
+    for size_index in range(6,15,2):
+        prob_size = 2**size_index
+        size_list.append(prob_size)
+        dimension = int(math.sqrt(prob_size))
+        rand_values = np.random.random((dimension, dimension))
+        naive_runs = []
+        fft_runs = []
+        for run_index in range(10):
+
+            naive_start = time.time()
+            naive2d_DFT(rand_values)
+            naive_end = time.time()
+            naive_time = naive_end - naive_start
+            naive_runs.append(naive_time)
+
+            fft_start = time.time()
+            FFT2d(rand_values)
+            fft_end = time.time()
+            fft_time = fft_end - fft_start
+            fft_runs.append(fft_time)
+
+        naive_mean = np.mean(np.asarray(naive_runs))
+        fft_mean = np.mean(np.asarray(fft_runs))
+        naive_var = np.var(np.asarray(naive_runs))
+        fft_var = np.var(np.asarray(fft_runs))
+
+        print("For problem size 2^" + str(size_index))
+        print("Naive had a mean of: " + str(naive_mean) + " and variance of: " + str(naive_var))
+        print("FFT had a mean of: " + str(fft_mean) + " and variance of: " + str(fft_var))
+        print("----------")
+        naive_list.append(naive_mean)
+        fft_list.append(fft_mean)
+    
+    plt.title("Problem Size vs. Runtime")
+    plt.plot(size_list, naive_list, label="Naive", marker="o")
+    plt.plot(size_list, fft_list, label="FFT", marker="o")
+    plt.legend()
     plt.show()
 
 
@@ -236,5 +302,9 @@ if __name__ == "__main__":
 
     if int(mode) == 1:
         fastMode(img)
+    elif int(mode) == 2:
+        denoiseMode(img)
     elif int(mode) == 3:
         compressionMode(img)
+    elif int(mode) == 4:
+        plottingMode()
