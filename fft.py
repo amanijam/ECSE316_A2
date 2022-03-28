@@ -151,10 +151,12 @@ def denoiseMode(img):
 
     fraction = 0.09
 
-    denoised_img = naive2d_DFT(img)
+    denoised_img = FFT2d(img)
     denoised_img[round(fraction*num_rows):round(num_rows - (fraction*num_rows))] = (0 + 0j)
-    denoised_img[:, round(fraction*num_cols):round(num_cols - (fraction*num_cols))] = (0 + 0j)
-    denoised_img = inverseNaive2d_DFT(denoised_img)
+    denoised_img = denoised_img.transpose()
+    denoised_img[round(fraction*num_cols):round(num_cols - (fraction*num_cols))] = (0 + 0j)
+    denoised_img = denoised_img.transpose()
+    denoised_img = inverseFFT2d(denoised_img)
 
     print("Number of non-zero rows: " + str(round(num_rows*fraction*2)))
     print("Number of non-zero columns: " + str(round(num_cols*fraction*2)))
