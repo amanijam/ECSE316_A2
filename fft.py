@@ -2,6 +2,8 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
+import timeit
+import math
 
 # Default values
 mode = 1
@@ -111,6 +113,32 @@ def denoiseMode(img):
     plt.show()
 
 def plottingMode():
+
+    size_list = []
+    naive_list = []
+    fft_list = []
+    for size_index in range(6,12,2):
+        prob_size = 2**size_index
+        size_list.append(prob_size)
+        dimension = int(math.sqrt(prob_size))
+        rand_values = np.random.random((dimension, dimension))
+        naive_runs = []
+        fft_runs = []
+        for run_index in range(10):
+
+            naive_start = timeit.timeit()
+            naive2d(rand_values)
+            naive_end = timeit.timeit()
+            naive_time = naive_end - naive_start
+            naive_runs.append(naive_time)
+
+            fft_start = timeit.timeit()
+            naive2d(rand_values)
+            naive_end = timeit.timeit()
+            naive_time = naive_end - naive_start
+            naive_runs.append(naive_time)
+
+
     return 0
 
 
