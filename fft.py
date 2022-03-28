@@ -159,7 +159,7 @@ def denoiseMode(img):
     print("Number of non-zero rows: " + str(round(num_rows*fraction*2)))
     print("Number of non-zero columns: " + str(round(num_cols*fraction*2)))
     print("Fraction of non-zeroes: " + str(fraction)) 
-    
+
     plt.subplot(1, 2, 1)
     plt.title("Original Image")
     plt.imshow(img.real, cmap="gray")
@@ -255,8 +255,10 @@ def plottingMode():
         fft_list.append(fft_mean)
     
     plt.title("Problem Size vs. Runtime")
-    plt.plot(size_list, naive_list, label="Naive", marker="o")
-    plt.plot(size_list, fft_list, label="FFT", marker="o")
+    plt.plot(size_list, naive_list, 'b', label="Naive", marker="o")
+    plt.errorbar(size_list, naive_list, yerr=np.std(naive_list), ecolor='blue', capsize=8)
+    plt.plot(size_list, fft_list, 'orange', label="FFT", marker="o")
+    plt.errorbar(size_list, fft_list, yerr=np.std(fft_list), ecolor='orange', capsize=8)
     plt.legend()
     plt.show()
 
