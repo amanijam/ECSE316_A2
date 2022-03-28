@@ -132,13 +132,6 @@ def plottingMode():
             naive_time = naive_end - naive_start
             naive_runs.append(naive_time)
 
-            fft_start = timeit.timeit()
-            naive2d(rand_values)
-            naive_end = timeit.timeit()
-            naive_time = naive_end - naive_start
-            naive_runs.append(naive_time)
-
-
     return 0
 
 
