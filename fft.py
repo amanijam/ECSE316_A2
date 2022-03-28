@@ -149,13 +149,17 @@ def denoiseMode(img):
     num_rows = len(img)
     num_cols = len(img[0])
 
-    fraction = 0.075
+    fraction = 0.09
 
     denoised_img = naive2d_DFT(img)
-    denoised_img[round(fraction*num_rows):round((1-fraction)*num_rows)] = 0
-    denoised_img[:, round(fraction*num_cols):round((1-fraction)*num_cols)] = 0
+    denoised_img[round(fraction*num_rows):round(num_rows - (fraction*num_rows))] = (0 + 0j)
+    denoised_img[:, round(fraction*num_cols):round(num_cols - (fraction*num_cols))] = (0 + 0j)
     denoised_img = inverseNaive2d_DFT(denoised_img)
 
+    print("Number of non-zero rows: " + str(round(num_rows*fraction*2)))
+    print("Number of non-zero columns: " + str(round(num_cols*fraction*2)))
+    print("Fraction of non-zeroes: " + str(fraction)) 
+    
     plt.subplot(1, 2, 1)
     plt.title("Original Image")
     plt.imshow(img.real, cmap="gray")
@@ -223,7 +227,8 @@ def plottingMode():
         rand_values = np.random.random((dimension, dimension))
         naive_runs = []
         fft_runs = []
-        for run_index in range(10):
+
+        for _ in range(10):
 
             naive_start = time.time()
             naive2d_DFT(rand_values)
