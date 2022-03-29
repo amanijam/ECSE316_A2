@@ -16,6 +16,8 @@ Run fft.py as such (same as specified in the handout):
 ## Note
 We wrote and tested our program using Python version 3.
 
+Our program uses the following libraries: numpy, cv2, matplotlib, scipy.
+
 ## Files in our submission
 * ECSE316_Assignment2_Report.pdf (Report)
 
