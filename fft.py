@@ -33,7 +33,7 @@ def inverseNaiveDFT(arr):
     for i in range(len(arr)):
         transform[i] = np.sum(
             arr * np.exp((2j * np.pi) / len(arr) * i * np.arange(len(arr)))
-        )
+        ) / len(arr)
 
     return np.asarray(transform)
 
@@ -160,7 +160,7 @@ def denoiseMode(img):
 
     print("Number of non-zero rows: " + str(round(num_rows*fraction*2)))
     print("Number of non-zero columns: " + str(round(num_cols*fraction*2)))
-    print("Fraction of non-zeroes: " + str(fraction)) 
+    print("Fraction of non-zeroes: " + str(fraction*2)) 
 
     plt.subplot(1, 2, 1)
     plt.title("Original Image")
@@ -222,11 +222,10 @@ def plottingMode():
     size_list = []
     naive_list = []
     fft_list = []
-    for size_index in range(6,15,2):
+    for size_index in range(5,10):
         prob_size = 2**size_index
         size_list.append(prob_size)
-        dimension = int(math.sqrt(prob_size))
-        rand_values = np.random.random((dimension, dimension))
+        rand_values = np.random.random((prob_size, prob_size))
         naive_runs = []
         fft_runs = []
 
