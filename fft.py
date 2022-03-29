@@ -4,7 +4,6 @@ import cv2
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import time
-import math
 
 # MODE
 # [1] (Default) for fast mode where the image is converted into its FFT form and displayed
@@ -19,8 +18,11 @@ smallSize = 16
 def naiveDFT(arr):
     arr = np.asarray(arr, dtype=complex)
     transform = arr.copy()
+    # Iterates through all k values
     for i in range(len(arr)):
         transform[i] = np.sum(
+            # stores all terms of the sum within an array
+            # np.arange is used to store each "n" value for each term of the sum
             arr * np.exp((-2j * np.pi) / len(arr) * i * np.arange(len(arr)))
         )
 
@@ -30,10 +32,13 @@ def naiveDFT(arr):
 def inverseNaiveDFT(arr):
     arr = np.asarray(arr, dtype=complex)
     transform = arr.copy()
+    # Iterates through all k values
     for i in range(len(arr)):
         transform[i] = np.sum(
+            # stores all terms of the sum within an array
+            # np.arange is used to store each "n" value for each term of the sum
             arr * np.exp((2j * np.pi) / len(arr) * i * np.arange(len(arr)))
-        ) / len(arr)
+        ) / len(arr) # divides by N at the end
 
     return np.asarray(transform)
 
@@ -41,13 +46,17 @@ def inverseNaiveDFT(arr):
 def naive2d_DFT(arr):
     arr = np.asarray(arr, dtype=complex)
 
+    # transforms each row of the array using naive DFT
     for row_index, row in enumerate(arr):
         arr[row_index] = naiveDFT(row)
 
-    arr = arr.transpose()
+    arr = arr.transpose() # transposes array
+
+    # transforms each column of the array using naive DFT
     for col_index, col in enumerate(arr):
         arr[col_index] = naiveDFT(col)
 
+    # restores structure of original array
     arr = arr.transpose()
 
     return arr
@@ -56,13 +65,17 @@ def naive2d_DFT(arr):
 def inverseNaive2d_DFT(arr):
     arr = np.asarray(arr, dtype=complex)
 
+    # inverts each row of the array using inverse naive DFT
     for row_index, row in enumerate(arr):
         arr[row_index] = inverseNaiveDFT(row)
 
-    arr = arr.transpose()
+    arr = arr.transpose() # transposes array
+
+    # inverts each column of the array using inverse naive DFT
     for col_index, col in enumerate(arr):
         arr[col_index] = inverseNaiveDFT(col)
 
+    # restores structure of original array
     arr = arr.transpose()
 
     return arr
@@ -71,28 +84,30 @@ def inverseNaive2d_DFT(arr):
 def FFT(arr):
     n = len(arr)
     arr = np.asarray(arr, dtype=complex)
-    if n < smallSize:
+    if n < smallSize: # decided threshold
         return naiveDFT(arr)
     else:
-        arr_even = FFT(arr[::2])
-        arr_odd = FFT(arr[1::2])
+        arr_even = FFT(arr[::2]) # retrieves values at even indexes of array
+        arr_odd = FFT(arr[1::2]) # retrieves values at odd indexes of array
         k = np.arange(n)
-        exp = np.exp((-2j * np.pi * k) / n)
+        exp = np.exp((-2j * np.pi * k) / n) # calculates exponential terms for each k value
+        # To have same number of values in each array
         arr_even = np.concatenate((arr_even, arr_even))
         arr_odd = np.concatenate((arr_odd, arr_odd))
-        return arr_even + exp * arr_odd
+        return arr_even + exp * arr_odd 
 
 
 def inverseFFT(arr):
     n = len(arr)
     arr = np.asarray(arr, dtype=complex)
-    if n < smallSize:
+    if n < smallSize: # decided threshold
         return inverseNaiveDFT(arr) * n
     else:
-        arr_even = inverseFFT(arr[::2])
-        arr_odd = inverseFFT(arr[1::2])
+        arr_even = inverseFFT(arr[::2]) # retrieves values at even indexes of array
+        arr_odd = inverseFFT(arr[1::2]) # retrieves values at odd indexes of array
         k = np.arange(n)
-        exp = np.exp((2j * np.pi * k) / n)
+        exp = np.exp((2j * np.pi * k) / n) # calculates exponential terms for each k value
+        # To have same number of values in each array
         arr_even = np.concatenate((arr_even, arr_even))
         arr_odd = np.concatenate((arr_odd, arr_odd))
         return (arr_even + exp * arr_odd) / n
@@ -101,12 +116,17 @@ def inverseFFT(arr):
 def FFT2d(arr):
     arr = np.asarray(arr, dtype=complex)
 
+    # transforms each row of the array using FFT
     for row_index, row in enumerate(arr):
         arr[row_index] = FFT(row)
 
-    arr = arr.transpose()
+    arr = arr.transpose() # transposes array
+
+     # transforms each column of the array using FFT
     for col_index, col in enumerate(arr):
         arr[col_index] = FFT(col)
+    
+    # restores structure of original array
     arr = arr.transpose()
 
     return arr
@@ -115,12 +135,17 @@ def FFT2d(arr):
 def inverseFFT2d(arr):
     arr = np.asarray(arr, dtype=complex)
 
+    # inverts each row of the array using inverse FFT
     for row_index, row in enumerate(arr):
         arr[row_index] = inverseFFT(row)
 
-    arr = arr.transpose()
+    arr = arr.transpose()  # transposes array
+
+    # inverts each column of the array using inverse FFT
     for col_index, col in enumerate(arr):
         arr[col_index] = inverseFFT(col)
+    
+    # restores structure of original array
     arr = arr.transpose()
 
     return arr
@@ -146,29 +171,35 @@ def fastMode(img):
 
 def denoiseMode(img):
 
-    num_rows = len(img)
+    num_rows = len(img) 
     num_cols = len(img[0])
 
-    fraction = 0.09
+    fraction = 0.09 # the amount of pixels to keep at each low frequency
 
-    denoised_img = FFT2d(img)
+    denoised_img = FFT2d(img) # takes FFT transform of 2D array
+    # sets appropriate high-frequency rows to 0
     denoised_img[round(fraction*num_rows):round(num_rows - (fraction*num_rows))] = (0 + 0j)
-    denoised_img = denoised_img.transpose()
+    denoised_img = denoised_img.transpose() 
+    # sets appropriate high-frequency columns to 0
     denoised_img[round(fraction*num_cols):round(num_cols - (fraction*num_cols))] = (0 + 0j)
-    denoised_img = denoised_img.transpose()
-    denoised_img = inverseFFT2d(denoised_img)
+    denoised_img = denoised_img.transpose() # restores original array structure
+    denoised_img = inverseFFT2d(denoised_img) # inverts the 2D array back
 
+    # statistics of non-zero values remaining
     print("Number of non-zero rows: " + str(round(num_rows*fraction*2)))
     print("Number of non-zero columns: " + str(round(num_cols*fraction*2)))
     print("Fraction of non-zeroes: " + str(fraction*2)) 
 
+    # original image graphing
     plt.subplot(1, 2, 1)
     plt.title("Original Image")
     plt.imshow(img.real, cmap="gray")
 
+    # denoised image graphing
     plt.subplot(1, 2, 2)
     plt.title("Denoised Image")
     plt.imshow(denoised_img.real, cmap="gray")
+
     plt.show()
 
 def compressionMode(img):
@@ -222,44 +253,49 @@ def plottingMode():
     size_list = []
     naive_list = []
     fft_list = []
+    # the range was determined by seeing when our computer began to struggle with the problem size
     for size_index in range(5,10):
         prob_size = 2**size_index
-        size_list.append(prob_size)
-        rand_values = np.random.random((prob_size, prob_size))
+        size_list.append(prob_size) # for x-axis data
+        rand_values = np.random.random((prob_size, prob_size)) # creates random 2D array
         naive_runs = []
         fft_runs = []
 
+        # takes the measurement of 10 runs of FFT and Naive methods
         for _ in range(10):
 
             naive_start = time.time()
             naive2d_DFT(rand_values)
             naive_end = time.time()
             naive_time = naive_end - naive_start
-            naive_runs.append(naive_time)
+            naive_runs.append(naive_time) # stores Naive runtime for this problem size
 
             fft_start = time.time()
             FFT2d(rand_values)
             fft_end = time.time()
             fft_time = fft_end - fft_start
-            fft_runs.append(fft_time)
+            fft_runs.append(fft_time) # stores FFT runtime for this problem size
 
+        # calculates means and variances of the methods
         naive_mean = np.mean(np.asarray(naive_runs))
         fft_mean = np.mean(np.asarray(fft_runs))
         naive_var = np.var(np.asarray(naive_runs))
         fft_var = np.var(np.asarray(fft_runs))
 
+        # prints the mean and variance statistics of the problem size
         print("For problem size 2^" + str(size_index))
         print("Naive had a mean of: " + str(naive_mean) + " and variance of: " + str(naive_var))
         print("FFT had a mean of: " + str(fft_mean) + " and variance of: " + str(fft_var))
         print("----------")
-        naive_list.append(naive_mean)
-        fft_list.append(fft_mean)
+        naive_list.append(naive_mean) # stores naive method mean for problem size
+        fft_list.append(fft_mean) # stores FFT method mean for problem size
     
+    # To plot the graph
     plt.title("Problem Size vs. Runtime")
-    plt.plot(size_list, naive_list, 'b', label="Naive", marker="o")
-    plt.errorbar(size_list, naive_list, yerr=np.std(naive_list), ecolor='blue', capsize=8)
-    plt.plot(size_list, fft_list, 'orange', label="FFT", marker="o")
-    plt.errorbar(size_list, fft_list, yerr=np.std(fft_list), ecolor='orange', capsize=8)
+    plt.plot(size_list, naive_list, 'b', label="Naive", marker="o") # Naive method line
+    plt.errorbar(size_list, naive_list, yerr=np.std(naive_list), ecolor='blue', capsize=8) # Naive method error bars
+    plt.plot(size_list, fft_list, 'orange', label="FFT", marker="o") # FFT method line
+    plt.errorbar(size_list, fft_list, yerr=np.std(fft_list), ecolor='orange', capsize=8) # FFt method error bars
     plt.legend()
     plt.show()
 
