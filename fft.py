@@ -195,7 +195,7 @@ def compressionMode(img):
     plt.title("Original Image")
     plt.imshow(img, cmap="gray")
 
-    c = [0, 10, 35, 50, 75, 95]  # 6 different compression levels
+    c = [0, 25, 50, 75, 85, 95]  # 6 different compression levels
 
     for i in range(2, 7):
         if i == 2:
