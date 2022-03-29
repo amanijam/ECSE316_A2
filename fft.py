@@ -1,10 +1,12 @@
 import sys
+import os
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import time
 import math
+from scipy import sparse
 
 # MODE
 # [1] (Default) for fast mode where the image is converted into its FFT form and displayed
@@ -144,6 +146,7 @@ def fastMode(img):
 
     plt.show()
 
+
 def denoiseMode(img):
 
     num_rows = len(img)
@@ -152,15 +155,19 @@ def denoiseMode(img):
     fraction = 0.09
 
     denoised_img = FFT2d(img)
-    denoised_img[round(fraction*num_rows):round(num_rows - (fraction*num_rows))] = (0 + 0j)
+    denoised_img[
+        round(fraction * num_rows) : round(num_rows - (fraction * num_rows))
+    ] = (0 + 0j)
     denoised_img = denoised_img.transpose()
-    denoised_img[round(fraction*num_cols):round(num_cols - (fraction*num_cols))] = (0 + 0j)
+    denoised_img[
+        round(fraction * num_cols) : round(num_cols - (fraction * num_cols))
+    ] = (0 + 0j)
     denoised_img = denoised_img.transpose()
     denoised_img = inverseFFT2d(denoised_img)
 
-    print("Number of non-zero rows: " + str(round(num_rows*fraction*2)))
-    print("Number of non-zero columns: " + str(round(num_cols*fraction*2)))
-    print("Fraction of non-zeroes: " + str(fraction)) 
+    print("Number of non-zero rows: " + str(round(num_rows * fraction * 2)))
+    print("Number of non-zero columns: " + str(round(num_cols * fraction * 2)))
+    print("Fraction of non-zeroes: " + str(fraction))
 
     plt.subplot(1, 2, 1)
     plt.title("Original Image")
@@ -171,10 +178,15 @@ def denoiseMode(img):
     plt.imshow(denoised_img.real, cmap="gray")
     plt.show()
 
+
 def compressionMode(img):
     # 0% compression
     originalTransf = FFT2d(img)
-    nonZeros = [np.count_nonzero(originalTransf)]
+
+    nonZeros = [np.count_nonzero(originalTransf)]  # keep track of non zeros
+    sparseMatrix = sparse.csc_matrix(originalTransf)
+    sparse.save_npz("Original.npz", sparseMatrix)
+    sizes = [os.path.getsize("Original.npz")]  # keep track of sparse matrix file sizes
 
     plt.figure(figsize=(15, 10))
 
@@ -203,7 +215,16 @@ def compressionMode(img):
         nextTransf = np.where(
             abs(nextTransf) < percentile, 0, nextTransf
         )  # keep only the largest percentile
-        nonZeros.append(np.count_nonzero(nextTransf))  # count the number of non zeros
+
+        nonZeros.append(
+            np.count_nonzero(nextTransf)
+        )  # count the number of non zeros and add to array
+
+        sparseMatrix = sparse.csc_matrix(nextTransf)
+        nextFileName = "Compressed_{}%.npz".format(compression)
+        sparse.save_npz(nextFileName, sparseMatrix)
+        sizes.append(os.path.getsize(nextFileName))  # get file size and add to array
+
         nextInverse = inverseFFT2d(nextTransf)  # take inverse FT to obtain image
 
         # Plot compressed image
@@ -212,17 +233,23 @@ def compressionMode(img):
         plt.imshow(np.real(nextInverse), cmap="gray")
 
     print("Number of non zeros:")
-    print("Original \t- {} ".format(nonZeros[0]))
+    print(
+        "Original \t- {}\t; Sparse Matrix File Size - {}".format(nonZeros[0], sizes[0])
+    )
     for i in range(1, 6):
-        print("{}% Compression - {}".format(c[i], nonZeros[i]))
+        print(
+            "{}% Compression - {}\t; Sparse Matrix File Size - {}".format(
+                c[i], nonZeros[i], sizes[i]
+            )
+        )
     plt.show()
 
-def plottingMode():
 
+def plottingMode():
     size_list = []
     naive_list = []
     fft_list = []
-    for size_index in range(6,15,2):
+    for size_index in range(6, 15, 2):
         prob_size = 2**size_index
         size_list.append(prob_size)
         dimension = int(math.sqrt(prob_size))
@@ -250,17 +277,26 @@ def plottingMode():
         fft_var = np.var(np.asarray(fft_runs))
 
         print("For problem size 2^" + str(size_index))
-        print("Naive had a mean of: " + str(naive_mean) + " and variance of: " + str(naive_var))
-        print("FFT had a mean of: " + str(fft_mean) + " and variance of: " + str(fft_var))
+        print(
+            "Naive had a mean of: "
+            + str(naive_mean)
+            + " and variance of: "
+            + str(naive_var)
+        )
+        print(
+            "FFT had a mean of: " + str(fft_mean) + " and variance of: " + str(fft_var)
+        )
         print("----------")
         naive_list.append(naive_mean)
         fft_list.append(fft_mean)
-    
+
     plt.title("Problem Size vs. Runtime")
-    plt.plot(size_list, naive_list, 'b', label="Naive", marker="o")
-    plt.errorbar(size_list, naive_list, yerr=np.std(naive_list), ecolor='blue', capsize=8)
-    plt.plot(size_list, fft_list, 'orange', label="FFT", marker="o")
-    plt.errorbar(size_list, fft_list, yerr=np.std(fft_list), ecolor='orange', capsize=8)
+    plt.plot(size_list, naive_list, "b", label="Naive", marker="o")
+    plt.errorbar(
+        size_list, naive_list, yerr=np.std(naive_list), ecolor="blue", capsize=8
+    )
+    plt.plot(size_list, fft_list, "orange", label="FFT", marker="o")
+    plt.errorbar(size_list, fft_list, yerr=np.std(fft_list), ecolor="orange", capsize=8)
     plt.legend()
     plt.show()
 
